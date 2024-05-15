@@ -1,11 +1,10 @@
 def format_linter_error(error: dict) -> dict:
 
     return {
-        "name": [val for key, val in error.items() if key == "code"][0],
-        "line": [val for key, val in error.items() if key == "line_number"][0],
-        "column":
-            [val for key, val in error.items() if key == "column_number"][0],
-        "message": [val for key, val in error.items() if key == "text"][0],
+        "name": error.get("code"),
+        "line": error.get("line_number"),
+        "column": error.get("column_number"),
+        "message": error.get("text"),
         "source": "flake8"
     }
 
@@ -13,9 +12,9 @@ def format_linter_error(error: dict) -> dict:
 def format_single_linter_file(file_path: str, errors: list) -> dict:
 
     return {
-        "errors": [format_linter_error(i) for i in errors],
+        "errors": [format_linter_error(err_point) for err_point in errors],
         "path": file_path,
-        "status": "failed"
+        "status": "failed" if bool(errors) else "passed"
     }
 
 
@@ -23,11 +22,5 @@ def format_linter_report(linter_report: dict) -> list:
 
     return [
         format_single_linter_file(key, linter_report[key])
-        if bool(linter_report.get(key))
-        else {
-            "errors": [],
-            "path": key,
-            "status": "passed"
-        }
         for key in linter_report.keys()
     ]
